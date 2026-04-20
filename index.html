@@ -1,805 +1,391 @@
+
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>交互式校园地图 - 音频导览标记系统</title>
-    <meta name="description" content="纯前端交互式校园地图，支持标记、录音、音频导览、声音谜题。">
-    <meta name="keywords" content="校园地图,交互式地图,音频导览,标记系统,录音讲解">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Josefin+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Python 面向对象编程：类与对象 | 学习笔记</title>
     <style>
-        :root {
-            --art-deco-bg-primary: #0d1b2a;
-            --art-deco-bg-secondary: #1b263b;
-            --art-deco-bg-card: #faf3e0;
-            --art-deco-gold: #d4af37;
-            --art-deco-gold-light: #f4d35e;
-            --art-deco-gold-dark: #b8960c;
-            --art-deco-text-light: #f5f0e1;
-            --art-deco-text-dark: #1b263b;
-            --art-deco-accent: #0f4c5c;
-            --art-deco-accent-light: #1a6b7c;
-            --art-deco-border: #d4af37;
-            --art-deco-shadow: rgba(212, 175, 55, 0.3);
-            --font-display: 'Cinzel', serif;
-            --font-body: 'Josefin Sans', sans-serif;
-        }
-        
-        body { 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            font-family: var(--font-body);
-            background: var(--art-deco-bg-primary);
-        }
-        #map { 
-            flex: 3;
-            height: 100vh;
-            z-index: 1;
-            position: relative;
-            background: var(--art-deco-bg-primary);
-        }
-        .control-panel {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-            background: linear-gradient(135deg, var(--art-deco-bg-card) 0%, #f0e6d3 100%);
-            padding: 15px 20px;
-            border: 2px solid var(--art-deco-gold);
-            box-shadow: 
-                0 0 0 1px var(--art-deco-gold-dark),
-                0 4px 20px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.3);
-        }
-        .control-panel::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 20px;
-            right: 20px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--art-deco-gold-light), transparent);
-        }
-        .control-panel h3 {
-            font-family: var(--font-display);
-            color: var(--art-deco-text-dark);
-            margin: 0 0 12px 0;
-            font-size: 14px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--art-deco-gold);
-            padding-bottom: 8px;
-        }
-        .audio-panel {
-            flex: 1;
-            height: 100vh;
-            background: linear-gradient(180deg, var(--art-deco-bg-secondary) 0%, var(--art-deco-bg-primary) 100%);
-            padding: 20px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            overflow-y: auto;
-            z-index: 1;
-            position: relative;
-            transition: all 0.3s ease;
-            min-width: 50px;
-            max-width: 400px;
-            border-left: 2px solid var(--art-deco-gold);
         }
-        .audio-panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100px;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(212, 175, 55, 0.03) 10px,
-                rgba(212, 175, 55, 0.03) 20px
-            );
-            pointer-events: none;
+
+        body {
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            line-height: 1.6;
+            padding: 2rem 1.5rem;
         }
-        .audio-panel h2 {
-            font-family: var(--font-display);
-            color: var(--art-deco-gold);
-            font-size: 18px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin: 0 0 20px 0;
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .hero {
             text-align: center;
-            position: relative;
+            margin-bottom: 3rem;
         }
-        .audio-panel h2::before,
-        .audio-panel h2::after {
-            content: '◆';
-            font-size: 10px;
-            margin: 0 15px;
-            color: var(--art-deco-gold-light);
+
+        .hero h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, #306998, #4584b6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
         }
-        .audio-panel h3 {
-            font-family: var(--font-display);
-            color: var(--art-deco-gold-light);
-            font-size: 13px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin: 0 0 12px 0;
+
+        .hero .sub {
+            font-size: 1.2rem;
+            color: #475569;
+            margin-top: 0.5rem;
         }
-        .audio-panel.collapsed {
-            flex: 0 0 50px;
-            min-width: 50px;
-            max-width: 50px;
-            padding: 0;
-            overflow: hidden;
-        }
-        .audio-panel.collapsed .audio-panel-content {
-            display: none;
-        }
-        .audio-panel.collapsed .audio-panel-toggle {
-            width: 50px;
-            height: 100vh;
-            padding: 0;
-        }
-        .audio-panel-toggle {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 30px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--art-deco-gold) 0%, var(--art-deco-gold-dark) 100%);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--art-deco-bg-primary);
-            font-size: 16px;
-            transition: all 0.3s ease;
-            z-index: 10;
-        }
-        .audio-panel-toggle:hover {
-            background: linear-gradient(180deg, var(--art-deco-gold-light) 0%, var(--art-deco-gold) 100%);
-            box-shadow: 0 0 15px var(--art-deco-shadow);
-        }
-        .audio-panel-toggle::before {
-            content: '◀';
-            font-family: sans-serif;
-        }
-        .audio-panel.collapsed .audio-panel-toggle::before {
-            content: '▶';
-        }
-        .audio-panel-content {
-            margin-left: 30px;
-        }
-        .icon-list {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .icon-option {
-            width: 36px;
-            height: 36px;
-            cursor: pointer;
-            border: 2px solid var(--art-deco-gold);
-            background: var(--art-deco-bg-card);
-            padding: 2px;
-            transition: all 0.2s ease;
-        }
-        .icon-option:hover {
-            border-color: var(--art-deco-gold-light);
-            box-shadow: 0 0 10px var(--art-deco-shadow);
-            transform: scale(1.05);
-        }
-        .icon-option.selected {
-            border-color: var(--art-deco-gold-light);
-            background-color: var(--art-deco-gold);
-            box-shadow: 0 0 15px var(--art-deco-shadow);
-        }
-        .audio-controls {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: linear-gradient(135deg, rgba(15, 76, 92, 0.3) 0%, rgba(27, 38, 59, 0.5) 100%);
-            border: 1px solid var(--art-deco-gold);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
-        }
-        .audio-list {
-            margin-top: 20px;
-        }
-        .audio-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, rgba(15, 76, 92, 0.4) 0%, rgba(27, 38, 59, 0.6) 100%);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            transition: all 0.2s ease;
-        }
-        .audio-item:hover {
-            border-color: var(--art-deco-gold);
-            box-shadow: 0 0 10px var(--art-deco-shadow);
-        }
-        .audio-item button {
-            margin-left: 10px;
-        }
-        .audio-item span,
-        .audio-item input {
-            color: var(--art-deco-text-light);
-        }
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            border: 2px solid var(--art-deco-gold);
-            background: linear-gradient(180deg, var(--art-deco-bg-secondary) 0%, var(--art-deco-bg-primary) 100%);
-            color: var(--art-deco-gold);
-            cursor: pointer;
-            font-family: var(--font-body);
-            font-weight: 500;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-size: 11px;
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
-            transition: left 0.3s ease;
-        }
-        button:hover {
-            background: linear-gradient(180deg, var(--art-deco-gold-dark) 0%, var(--art-deco-gold) 100%);
-            color: var(--art-deco-bg-primary);
-            box-shadow: 0 0 15px var(--art-deco-shadow);
-        }
-        button:hover::before {
-            left: 100%;
-        }
-        button:disabled {
-            background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-            border-color: #444;
-            color: #666;
-            cursor: not-allowed;
-        }
-        button:disabled:hover {
-            box-shadow: none;
-        }
-        .recording {
-            background: linear-gradient(180deg, #8b0000 0%, #ff4444 100%);
-            border-color: #ff4444;
-            color: white;
-            animation: recordingPulse 1s infinite;
-        }
-        @keyframes recordingPulse {
-            0%, 100% { box-shadow: 0 0 5px rgba(255, 68, 68, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(255, 68, 68, 0.8); }
-        }
-        /* 引导高亮样式 */
-        .guide-highlight {
-            animation: pulse 1.5s infinite;
-            border: 2px solid #ff9800 !important;
-            box-shadow: 0 0 10px rgba(255, 152, 0, 0.8);
-            z-index: 2001 !important;
-        }
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(255, 152, 0, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);
-            }
-        }
-        /* 弹窗样式 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(13, 27, 42, 0.95);
-            z-index: 3000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 50px,
-                rgba(212, 175, 55, 0.02) 50px,
-                rgba(212, 175, 55, 0.02) 100px
-            );
-            pointer-events: none;
-        }
-        /* 控制面板样式 */
-        .control-panel {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 2002;
+
+        /* 通用卡片样式 */
+        .card {
             background: white;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            border-radius: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: box-shadow 0.2s ease;
         }
-        /* 引导遮罩样式 */
-        #guideOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1999;
-            display: none;
-            pointer-events: none;
+
+        .card:hover {
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.1);
         }
-        .modal-content {
-            background: linear-gradient(135deg, var(--art-deco-bg-card) 0%, #f0e6d3 100%);
-            padding: 30px 40px;
-            border: 2px solid var(--art-deco-gold);
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 
-                0 0 0 1px var(--art-deco-gold-dark),
-                0 10px 40px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255,255,255,0.3);
-            position: relative;
+
+        .card h2 {
+            font-size: 1.8rem;
+            border-left: 6px solid #facc15;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+            color: #0f172a;
+            font-weight: 600;
         }
-        .modal-content::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 30px;
-            right: 30px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--art-deco-gold-light), transparent);
+
+        /* 5W2H 网格布局 */
+        .grid-5w2h {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
         }
-        .modal-content::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 30px;
-            right: 30px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--art-deco-gold-light), transparent);
+
+        .item {
+            background: #f1f5f9;
+            border-radius: 1.5rem;
+            padding: 1.25rem;
+            transition: transform 0.1s ease, background 0.2s;
         }
-        /* 引导弹窗样式 */
-        #guideModal {
-            background-color: transparent;
-            display: block;
-            pointer-events: none;
+
+        .item:hover {
+            background: #eef2ff;
         }
-        #guideModal .modal-content {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            max-width: 400px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            pointer-events: auto;
+
+        .item h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .modal h2 {
-            font-family: var(--font-display);
-            color: var(--art-deco-text-dark);
-            margin-top: 0;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--art-deco-gold);
-            padding-bottom: 10px;
+
+        .item p {
+            color: #334155;
         }
-        .modal ol,
-        .modal ul,
-        .modal p {
-            color: var(--art-deco-text-dark);
-            line-height: 1.8;
+
+        /* 图形化区域 */
+        .analogy {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            background: #f1f5f9;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-top: 0.5rem;
         }
-        .modal ol li,
-        .modal ul li {
-            margin-bottom: 8px;
-        }
-        .modal ol li strong,
-        .modal ul li strong {
-            color: var(--art-deco-accent);
-        }
-        .modal button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-        /* 事件弹窗样式 */
-        .event-modal-content {
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-        .emotion-button {
-            font-size: 28px;
-            padding: 8px 16px;
-            border: 2px solid var(--art-deco-gold);
-            background: var(--art-deco-bg-card);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .emotion-button:hover {
-            border-color: var(--art-deco-gold-light);
-            transform: scale(1.1);
-            box-shadow: 0 0 15px var(--art-deco-shadow);
-        }
-        .emotion-button:active {
-            transform: scale(0.95);
-        }
-        /* 输入框样式 */
-        input[type="text"],
-        textarea,
-        select {
-            background: rgba(13, 27, 42, 0.8);
-            border: 1px solid var(--art-deco-gold);
-            color: var(--art-deco-text-light);
-            padding: 10px 12px;
-            font-family: var(--font-body);
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-        input[type="text"]:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--art-deco-gold-light);
-            box-shadow: 0 0 10px var(--art-deco-shadow);
-        }
-        input[type="text"]::placeholder,
-        textarea::placeholder {
-            color: rgba(245, 240, 225, 0.5);
-        }
-        input[type="file"] {
-            color: var(--art-deco-text-light);
-        }
-        /* 关卡信息弹窗 */
-        #level-info {
-            background: linear-gradient(135deg, var(--art-deco-bg-card) 0%, #f0e6d3 100%);
-            border: 2px solid var(--art-deco-gold);
-            box-shadow: 0 0 0 1px var(--art-deco-gold-dark), 0 10px 40px rgba(0,0,0,0.5);
-        }
-        #level-info h3 {
-            font-family: var(--font-display);
-            color: var(--art-deco-text-dark);
-            letter-spacing: 2px;
-        }
-        #level-info p {
-            color: var(--art-deco-text-dark);
-        }
-        /* 关卡完成弹窗 */
-        .level-complete-modal .modal-content {
+
+        .analogy-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
             text-align: center;
+            box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        .level-complete-modal h2 {
-            color: var(--art-deco-gold);
-            font-size: 28px;
+
+        .emoji-big {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
         }
-        /* 用户事件标记样式 */
-        .user-event-marker {
-            filter: drop-shadow(0 0 6px var(--art-deco-gold));
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1.2rem;
+            border-radius: 1rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.85rem;
+            margin: 1rem 0;
         }
-        /* 系统事件标记样式 */
-        .system-event-marker {
-            filter: drop-shadow(0 0 6px var(--art-deco-gold-light));
+
+        code {
+            font-family: monospace;
+            background: #eef2ff;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            color: #1e40af;
         }
-        /* 自定义图标上传区域样式 */
-        .icon-upload-area {
+
+        .exercise {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            margin-bottom: 1.5rem;
+            padding: 1.2rem;
+            border-radius: 1rem;
+        }
+
+        .exercise p {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .answer {
+            background: #e6f7e6;
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
             display: none;
         }
-        .icon-upload-area.visible {
-            display: block;
+
+        .show-btn {
+            background: #306998;
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
+            transition: background 0.2s;
         }
-        /* 锁定标记样式 */
-        .locked-marker {
-            filter: grayscale(50%);
-            opacity: 0.8;
+
+        .show-btn:hover {
+            background: #1e4a6b;
         }
-        /* 音频播放时的高亮样式 */
-        .playing-marker {
-            animation: pulse 1s infinite;
+
+        .link-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            list-style: none;
+            margin-top: 1rem;
         }
-        
-        /* 选择按钮点击时的特别高亮样式 */
-        .selection-highlight {
-            animation: selectionPulse 0.5s ease-in-out infinite alternate;
+
+        .link-list li {
+            background: #eef2ff;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
         }
-        
-        @keyframes selectionPulse {
-            0% {
-                transform: scale(1);
-                filter: brightness(1.6) drop-shadow(0 0 15px #4CAF50);
+
+        .link-list a {
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            color: #64748b;
+            font-size: 0.85rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
             }
-            100% {
-                transform: scale(1.1);
-                filter: brightness(1.8) drop-shadow(0 0 20px #4CAF50);
-            }
-        }
-        
-        @keyframes pulse-playing {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.2);
-            }
-        }
-        
-        /* Leaflet 地图样式覆盖 */
-        .leaflet-control-attribution {
-            background: linear-gradient(135deg, var(--art-deco-bg-card) 0%, #f0e6d3 100%) !important;
-            border: 1px solid var(--art-deco-gold) !important;
-            border-radius: 0 !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
-            font-family: var(--font-body) !important;
-            color: var(--art-deco-text-dark) !important;
-        }
-        .leaflet-control-attribution a {
-            color: var(--art-deco-accent) !important;
-        }
-        
-        /* Art Deco 装饰角标 */
-        .art-deco-corner {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--art-deco-gold);
-        }
-        .art-deco-corner.top-left {
-            top: 0;
-            left: 0;
-            border-right: none;
-            border-bottom: none;
-        }
-        .art-deco-corner.top-right {
-            top: 0;
-            right: 0;
-            border-left: none;
-            border-bottom: none;
-        }
-        .art-deco-corner.bottom-left {
-            bottom: 0;
-            left: 0;
-            border-right: none;
-            border-top: none;
-        }
-        .art-deco-corner.bottom-right {
-            bottom: 0;
-            right: 0;
-            border-left: none;
-            border-top: none;
-        }
-        
-        .recommended-highlight {
-            animation: recommendPulse 2s ease-in-out infinite !important;
-        }
-        
-        @keyframes recommendPulse {
-            0%, 100% { 
-                transform: scale(1);
-                filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5));
-            }
-            50% { 
-                transform: scale(1.15);
-                filter: drop-shadow(0 0 15px rgba(212, 175, 55, 1));
+
+            .card {
+                padding: 1.2rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- SEO 核心文字（搜索引擎唯一能看懂） -->
-    <div class="seo-content" style="position:absolute; left:-9999px; top:-9999px;">
-        <h1>交互式校园地图导览系统</h1>
-        <p>基于Leaflet开发的纯前端交互式校园地图，支持地图标记、录音解说、音频上传、播放讲解。</p>
-        <p>无需后端、无需AJAX、无需服务器，打开浏览器即可使用的校园导览工具。</p>
-    </div>
-    
-    <!-- 极简欢迎界面（首次打开） -->
-    <div id="welcomeOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--art-deco-bg-primary) 0%, #1a2a3a 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center;">
-        <div style="text-align: center; padding: 40px;">
-            <div style="font-size: 64px; margin-bottom: 20px;">🎓</div>
-            <h1 style="font-family: var(--font-display); color: var(--art-deco-gold); font-size: 28px; margin: 0 0 15px 0; letter-spacing: 3px;">紫金港声音地图</h1>
-            <p style="color: rgba(255,255,255,0.8); font-size: 16px; margin: 0 0 30px 0; max-width: 300px;">点击地标，聆听校园故事，留下你的声音</p>
-            <button id="startExploreBtn" style="padding: 15px 40px; font-size: 18px; background: linear-gradient(135deg, var(--art-deco-gold), var(--art-deco-gold-light)); color: var(--art-deco-bg-primary); border: none; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);">
-                开始探索校园
-            </button>
+    <div class="container">
+        <div class="hero">
+            <h1>🐍 Python 类（Class）与面向对象编程</h1>
+            <div class="sub">5W2H 深度拆解 · 一次吃透一个核心知识点</div>
         </div>
-    </div>
-    
-    <!-- 帮助弹窗（点击帮助按钮显示） -->
-    <div id="welcomeModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span id="closeHelpModal" style="position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer;">&times;</span>
-            <h2>📖 使用帮助</h2>
-            <ul style="line-height: 2.2;">
-                <li>🗺️ <strong>点击地标</strong>：播放校园故事音频</li>
-                <li>🎤 <strong>留下声音</strong>：点击右侧「录音」按钮</li>
-                <li>📌 <strong>放置标记</strong>：按 <kbd style="background: var(--art-deco-gold); padding: 2px 8px; border-radius: 4px;">N</kbd> 键</li>
-            </ul>
+
+        <!-- 1. 5W2H 基本概念区 -->
+        <div class="card">
+            <h2>📖 5W2H 框架 · 彻底理解“类”</h2>
+            <div class="grid-5w2h">
+                <div class="item"><h3>🔍 What（是什么）</h3><p>类是创建对象的“蓝图”或“模板”。它定义了一类对象共有的属性（数据）和方法（行为）[reference:2]。</p></div>
+                <div class="item"><h3>❓ Why（为什么）</h3><p>封装数据与操作，提高代码复用性、可维护性和组织性。避免散落的变量和重复代码[reference:3]。</p></div>
+                <div class="item"><h3>👤 Who（谁适用）</h3><p>任何希望写出更清晰、可扩展代码的Python开发者，尤其是构建中大型项目时。</p></div>
+                <div class="item"><h3>⏰ When（何时用）</h3><p>需要创建多个具有相同属性和行为的对象时，例如管理多个学生、员工、游戏角色等。</p></div>
+                <div class="item"><h3>📍 Where（哪里定义）</h3><p>通常在模块（.py文件）的顶层定义，方便在程序的其他部分导入和使用。</p></div>
+                <div class="item"><h3>🛠️ How（怎么用）</h3><p>使用 <code>class</code> 关键字定义类，通过 <code>__init__</code> 初始化属性，创建实例（对象）并调用其方法[reference:4]。</p></div>
+                <div class="item"><h3>⚖️ How much（成本/收益）</h3><p>初期有少量学习成本，但长期能显著提升代码质量、开发效率和团队协作能力。</p></div>
+            </div>
         </div>
-    </div>
-    
-    <!-- 顶部工具栏（极简版） -->
-    <div id="topToolbar" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 5000; display: flex; gap: 10px; align-items: center; background: linear-gradient(135deg, var(--art-deco-bg-card) 0%, #f0e6d3 100%); padding: 8px 15px; border-radius: 25px; border: 2px solid var(--art-deco-gold); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        <button id="helpBtn" style="display: flex; align-items: center; gap: 5px; padding: 8px 15px; background: transparent; border: 1px solid var(--art-deco-gold); border-radius: 20px; cursor: pointer; color: var(--art-deco-text-dark); font-size: 13px;">
-            <span>📖</span>
-            <span>帮助</span>
-        </button>
-    </div>
-    
-    <!-- 推荐地点提示 -->
-    <div id="recommendHint" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 5000; background: linear-gradient(135deg, var(--art-deco-bg-card) 0%, #f0e6d3 100%); padding: 12px 25px; border-radius: 25px; border: 2px solid var(--art-deco-gold); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        <span style="color: var(--art-deco-text-dark); font-size: 14px;">💡 点击闪烁的地标，聆听校园故事</span>
-    </div>
-    
-    <div class="control-panel">
-        <h3 style="font-family: var(--font-display); color: var(--art-deco-text-dark); margin: 0 0 12px 0; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--art-deco-gold); padding-bottom: 8px;">📌 选择标记类型</h3>
-        
-        <div class="icon-list" id="controlPanelTypeSelector">
-            <button class="icon-option marker-type-btn" data-type="sport" title="运动" style="font-size: 24px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #2ECC71; background: transparent; cursor: pointer;">⚽</button>
-            <button class="icon-option marker-type-btn" data-type="club" title="社团活动" style="font-size: 24px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #9B59B6; background: transparent; cursor: pointer;">🎭</button>
-            <button class="icon-option marker-type-btn" data-type="memory" title="纪念" style="font-size: 24px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #F39C12; background: transparent; cursor: pointer;">📌</button>
-            <button class="icon-option marker-type-btn" data-type="love" title="恋爱" style="font-size: 24px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #FF6B9B; background: transparent; cursor: pointer;">❤️</button>
-            <button class="icon-option marker-type-btn" data-type="study" title="学习" style="font-size: 24px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #4A90E2; background: transparent; cursor: pointer;">🎓</button>
+
+        <!-- 2. 图形化解释：蓝图 vs 房子 -->
+        <div class="card">
+            <h2>🎨 图形化类比 · 类与对象的关系</h2>
+            <div class="analogy">
+                <div class="analogy-card"><span class="emoji-big">🏠</span><strong style="font-size: 1.2rem;">类 (Class)</strong><p>就像一张<strong>建筑蓝图</strong>，定义了房子应该有哪些房间（属性）和功能（方法）。</p></div>
+                <div class="analogy-card"><span class="emoji-big">➡️</span><strong>实例化</strong><p>照着蓝图盖房子的过程。</p></div>
+                <div class="analogy-card"><span class="emoji-big">🏡</span><strong>对象 (Object)</strong><p>就是根据蓝图建出来的<strong>真实的房子</strong>。每个房子（对象）都是独立的，但都遵循同一个设计图（类）。</p></div>
+            </div>
+            <div class="code-block">
+                # 定义类 (蓝图)
+                class House:
+                    def __init__(self, owner, area):
+                        self.owner = owner   # 属性: 房主
+                        self.area = area     # 属性: 面积
+                
+                    def introduce(self):     # 方法: 介绍自己
+                        print(f"{self.owner}的房子，面积{self.area}平米")
+                
+                # 创建对象 (建房子)
+                my_house = House("小明", 120)
+                your_house = House("小红", 85)
+                
+                # 调用对象的方法
+                my_house.introduce()  # 输出: 小明的房子，面积120平米
+                your_house.introduce() # 输出: 小红的房子，面积85平米
+            </div>
         </div>
-        <button id="resetButton" style="margin-top: 10px; width: 100%;">🗑️ 清除所有标记</button>
-    </div>
-    
-    <!-- 地图容器 -->
-    <div id="map"></div>
-    
-    <!-- 极简录音面板 -->
-    <div class="audio-panel" id="audioPanel" style="width: 280px;">
-        <div class="audio-panel-toggle" id="audioPanelToggle" title="收起/展开面板"></div>
-        <div class="audio-panel-content">
-            <h2 style="text-align: center; margin-bottom: 15px;">🎤 留下你的声音</h2>
-            <div style="text-align: center; padding: 15px; background: rgba(212, 175, 55, 0.1); border-radius: 8px; margin-bottom: 15px;">
-                <p style="margin: 0 0 10px 0; color: var(--art-deco-text-dark); font-size: 13px;">分享你在紫金港的故事</p>
-                <input type="text" id="audioName" placeholder="给声音起个名字..." style="width: 100%; margin-bottom: 10px; padding: 10px; border: 2px solid var(--art-deco-gold); border-radius: 8px; text-align: center;">
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button id="recordButton" style="flex: 1; padding: 12px; background: linear-gradient(135deg, var(--art-deco-gold), var(--art-deco-gold-light)); color: var(--art-deco-bg-primary); border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🎤 录音</button>
-                    <button id="stopButton" disabled style="flex: 1; padding: 12px; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer;">⏹️ 停止</button>
+
+        <!-- 3. 练习题目区 (3个难度递进) -->
+        <div class="card">
+            <h2>✍️ 练习题目 · 从入门到实战</h2>
+            <div id="exercises">
+                <!-- 练习 1 -->
+                <div class="exercise">
+                    <p>❶ 【入门】创建一个 <code>Book</code> 类，具有 <code>title</code> 和 <code>author</code> 属性，并包含一个 <code>info()</code> 方法，打印“《书名》的作者是作者名”。创建两个实例并调用 <code>info()</code>[reference:5]。</p>
+                    <button class="show-btn" onclick="toggleAnswer(0)">📖 显示参考答案</button>
+                    <div class="answer" id="answer0">
+                        ✅ <strong>参考代码</strong><br>
+                        <pre style="background:#0f172a; color:#e2e8f0; padding: 0.75rem; border-radius: 0.75rem; overflow-x: auto;">class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+    def info(self):
+        print(f"《{self.title}》的作者是{self.author}")
+
+book1 = Book("三体", "刘慈欣")
+book2 = Book("活着", "余华")
+book1.info()  # 输出：《三体》的作者是刘慈欣
+book2.info()  # 输出：《活着》的作者是余华</pre>
+                    </div>
                 </div>
-                <div id="recordingStatus" style="margin-top: 10px; font-size: 12px; color: var(--art-deco-accent);"></div>
-            </div>
-            <div class="audio-list" style="max-height: 200px; overflow-y: auto;">
-                <h4 style="margin: 0 0 10px 0; color: var(--art-deco-text-dark);">🎵 我的录音</h4>
-                <div id="audioFiles"></div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 事件弹窗 -->
-    <div id="eventModal" class="modal" style="display: none;">
-        <div class="modal-content event-modal-content">
-            <span class="close-event-modal" style="position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer;">&times;</span>
-            <h2 id="eventTitle">标题</h2>
-            <hr style="border: none; border-top: 2px solid #0078A8; margin: 15px 0;">
-            <p id="eventDescription" style="line-height: 1.8; margin-bottom: 20px;"></p>
-            <img id="eventImage" src="" alt="事件图片" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px;">
-            <div id="reactionDisplay" style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-                <span style="font-weight: bold; margin-right: 10px;">人们的情绪反应：</span>
-                <span id="reactionCounts"></span>
-            </div>
-            <div id="reactionButtons" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-            </div>
-        </div>
-    </div>
-    
-    <!-- 绑定事件弹窗 -->
-    <div id="bindEventModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-bind-event-modal" style="position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer;">&times;</span>
-            <h2>绑定事件</h2>
-            <hr style="border: none; border-top: 2px solid #0078A8; margin: 15px 0;">
-            <p>请选择要绑定的事件：</p>
-            <div id="bindEventList" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
-            </div>
-            <div style="text-align: center;">
-                <button id="cancelBindEventButton" style="background-color: #ccc;">取消</button>
-                <button id="confirmBindEventButton">确认绑定</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 音频播放完成后输入文字的弹窗 -->
-    <div id="audioNoteModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-audio-note-modal" style="position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer;">&times;</span>
-            <h2>记录您的感受</h2>
-            <hr style="border: none; border-top: 2px solid #0078A8; margin: 15px 0;">
-            <p>请输入您听完这段音频后的感受或想法：</p>
-            <textarea id="audioNoteText" placeholder="输入您的感受..." style="width: 100%; height: 120px; margin-bottom: 15px; padding: 10px; resize: vertical; border: 2px solid #e0e0e0; border-radius: 4px;"></textarea>
-            <div style="text-align: center;">
-                <button id="cancelAudioNoteButton" style="background-color: #ccc;">跳过</button>
-                <button id="saveAudioNoteButton">保存</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 声音探索模式输入弹窗 -->
-    <div id="soundExploreModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 450px; text-align: center;">
-            <span id="closeSoundExploreModal" style="position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer;">&times;</span>
-            <h2 style="color: var(--art-deco-accent);">🎧 听音辨位</h2>
-            <hr style="border: none; border-top: 2px solid var(--art-deco-gold); margin: 15px 0;">
-            <p id="soundExploreHint" style="color: var(--art-deco-text-dark); margin-bottom: 15px;">正在播放音频...</p>
-            <div id="soundExploreAudioInfo" style="padding: 10px; background: rgba(212, 175, 55, 0.1); border-radius: 8px; margin-bottom: 15px;">
-                <p style="margin: 0; font-size: 13px; color: var(--art-deco-accent);">🎵 音频特征：<span id="soundAudioPattern">-</span></p>
-            </div>
-            <p style="font-size: 14px; color: var(--art-deco-text-dark); margin-bottom: 10px;">请输入你认为这是哪个建筑：</p>
-            <input type="text" id="soundExploreInput" placeholder="输入建筑名称..." style="width: 100%; padding: 12px; margin-bottom: 15px; font-size: 16px; border: 2px solid var(--art-deco-gold); border-radius: 8px;">
-            <div id="soundExploreFeedback" style="margin-bottom: 15px; min-height: 20px;"></div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button id="replaySoundBtn" style="background: var(--art-deco-accent);">🔄 重听音频</button>
-                <button id="submitSoundExploreBtn" style="background: linear-gradient(135deg, var(--art-deco-gold), var(--art-deco-gold-light)); color: var(--art-deco-bg-primary);">✓ 提交答案</button>
+                <!-- 练习 2 -->
+                <div class="exercise">
+                    <p>❷ 【进阶】创建一个 <code>BankAccount</code> 类，包含 <code>account_holder</code> 和 <code>balance</code> 属性。实现 <code>deposit(amount)</code> 和 <code>withdraw(amount)</code> 方法，并确保余额不能为负。最后打印账户信息[reference:6]。</p>
+                    <button class="show-btn" onclick="toggleAnswer(1)">💡 显示参考答案</button>
+                    <div class="answer" id="answer1">
+                        ✅ <strong>参考代码</strong><br>
+                        <pre style="background:#0f172a; color:#e2e8f0; padding: 0.75rem; border-radius: 0.75rem; overflow-x: auto;">class BankAccount:
+    def __init__(self, account_holder, balance=0):
+        self.account_holder = account_holder
+        self.balance = balance
+    def deposit(self, amount):
+        if amount > 0:
+            self.balance += amount
+            print(f"存款{amount}元，当前余额: {self.balance}")
+    def withdraw(self, amount):
+        if 0 < amount <= self.balance:
+            self.balance -= amount
+            print(f"取款{amount}元，剩余余额: {self.balance}")
+        else:
+            print("余额不足！")
+    def show_info(self):
+        print(f"{self.account_holder}的账户余额: {self.balance}元")
+
+acc = BankAccount("张三", 500)
+acc.deposit(200)
+acc.withdraw(300)
+acc.withdraw(500)
+acc.show_info()</pre>
+                    </div>
+                </div>
+                <!-- 练习 3 -->
+                <div class="exercise">
+                    <p>❸ 【挑战】创建一个 <code>Student</code> 类，并运用“继承”，创建一个 <code>GraduateStudent</code> 子类，为其增加 <code>research_area</code> 属性[reference:7]。</p>
+                    <button class="show-btn" onclick="toggleAnswer(2)">🚀 显示参考答案</button>
+                    <div class="answer" id="answer2">
+                        ✅ <strong>参考代码</strong><br>
+                        <pre style="background:#0f172a; color:#e2e8f0; padding: 0.75rem; border-radius: 0.75rem; overflow-x: auto;">class Student:
+    def __init__(self, name, student_id):
+        self.name = name
+        self.student_id = student_id
+    def introduce(self):
+        print(f"我是学生{self.name}，学号{self.student_id}")
+
+class GraduateStudent(Student):
+    def __init__(self, name, student_id, research_area):
+        super().__init__(name, student_id)
+        self.research_area = research_area
+    def introduce(self):
+        print(f"我是研究生{self.name}，研究领域是{self.research_area}")
+
+# 测试
+g_stu = GraduateStudent("李华", "G2024001", "人工智能")
+g_stu.introduce()</pre>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <!-- 声音探索模式首次引导层 -->
-    <div id="soundFirstGuide" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 500px; background: linear-gradient(135deg, var(--art-deco-bg-card) 0%, #f0e6d3 100%); border: 3px solid var(--art-deco-gold); border-radius: 15px; padding: 30px; z-index: 9999; box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);">
-        <div style="text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 15px;">🎧</div>
-            <h3 style="font-family: var(--font-display); color: var(--art-deco-gold); margin: 0 0 20px 0; letter-spacing: 2px;">声音探索模式指南</h3>
-            <div style="text-align: left; color: var(--art-deco-text-dark); line-height: 2;">
-                <p style="margin: 10px 0; padding: 10px; background: rgba(212, 175, 55, 0.1); border-radius: 8px;">
-                    <strong style="color: var(--art-deco-accent);">1.</strong> 地图初始为空白，所有地标隐藏
-                </p>
-                <p style="margin: 10px 0; padding: 10px; background: rgba(212, 175, 55, 0.1); border-radius: 8px;">
-                    <strong style="color: var(--art-deco-accent);">2.</strong> 点击地图上的<span style="color: #0078A8; font-weight: bold;">蓝色热点区域</span>播放音频
-                </p>
-                <p style="margin: 10px 0; padding: 10px; background: rgba(212, 175, 55, 0.1); border-radius: 8px;">
-                    <strong style="color: var(--art-deco-accent);">3.</strong> 根据音频特征，输入建筑名称解锁地标
-                </p>
-                <p style="margin: 10px 0; padding: 10px; background: rgba(212, 175, 55, 0.1); border-radius: 8px;">
-                    <strong style="color: var(--art-deco-accent);">4.</strong> 答案正确即可解锁地标，显示图标
-                </p>
-            </div>
-            <button id="closeSoundFirstGuide" style="margin-top: 20px; padding: 12px 40px; font-size: 16px; background: linear-gradient(135deg, var(--art-deco-gold), var(--art-deco-gold-light)); color: var(--art-deco-bg-primary); border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                我知道了，开始探索
-            </button>
+
+        <!-- 4. 经典学习网站推荐 -->
+        <div class="card">
+            <h2>🌐 经典学习网站 · 继续深入</h2>
+            <ul class="link-list">
+                <li><a href="https://www.w3schools.com/python/python_classes.asp" target="_blank" rel="noopener">W3Schools (Python Classes)</a></li>
+                <li><a href="https://docs.python.org/zh-cn/3/tutorial/classes.html" target="_blank" rel="noopener">Python 官方教程 (类)</a></li>
+                <li><a href="https://realpython.com/python3-object-oriented-programming/" target="_blank" rel="noopener">Real Python: OOP in Python</a></li>
+                <li><a href="https://www.learnpython.org/en/Classes_and_Objects" target="_blank" rel="noopener">LearnPython.org (交互式练习)</a></li>
+                <li><a href="https://www.freecodecamp.org/news/object-oriented-programming-in-python/" target="_blank" rel="noopener">freeCodeCamp: Python OOP</a></li>
+            </ul>
+            <p style="margin-top: 1rem;">💡 建议从 W3Schools 的实例开始，结合官方文档的深度讲解，把今天学到的 <strong>类（Class）</strong> 彻底掌握。</p>
         </div>
+
+        <footer>
+            📘 学习笔记 · 专注于 Python 类与对象 | 更多知识点（封装、多态、魔法方法）后续更新
+        </footer>
     </div>
-    
-    <!-- 音频权限提示 -->
-    <div id="audioPermissionHint" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; background: linear-gradient(135deg, #ff7e00, #ff9a00); color: white; border-radius: 25px; z-index: 9999; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 126, 0, 0.4);">
-        🔊 请点击地图任意位置以启用音频播放
-    </div>
-    
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/migration.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/tests.js"></script>
-    <script src="js/config-check.js"></script>
+
     <script>
-        // 页面加载时执行迁移检查
-        if (typeof Migration !== 'undefined') {
-            Migration.checkVersion();
+        function toggleAnswer(index) {
+            let ansDiv = document.getElementById(`answer${index}`);
+            if (ansDiv.style.display === "none" || ansDiv.style.display === "") {
+                ansDiv.style.display = "block";
+            } else {
+                ansDiv.style.display = "none";
+            }
+        }
+        // 初始化所有答案为隐藏
+        for (let i = 0; i < 3; i++) {
+            let el = document.getElementById(`answer${i}`);
+            if (el) el.style.display = "none";
         }
     </script>
 </body>
